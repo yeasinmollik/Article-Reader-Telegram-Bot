@@ -9,6 +9,7 @@ python = "^3.8"
 python-telegram-bot = "^13.11"
 export-to-telegraph = "^0.0.143"
 urlextract = "^1.6.0"
+azure-cognitiveservices-speech = "^1.21.0"
 
 [tool.poetry.dev-dependencies]
 

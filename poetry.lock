@@ -25,6 +25,14 @@ twisted = ["twisted"]
 zookeeper = ["kazoo"]
 
 [[package]]
+name = "azure-cognitiveservices-speech"
+version = "1.21.0"
+description = "\"Microsoft Cognitive Services Speech SDK\""
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "backports.zoneinfo"
 version = "0.2.1"
 description = "Backport of the standard library zoneinfo module"
@@ -454,12 +462,34 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "30284ecc732ecb3a373278918a60b1c7c5a9a035f561b20b7387e73899784ee3"
+content-hash = "70f2bc5cfe92559f25ce8175ab7cfe4a6046702a0df46ca2f42e2323dcf3fa06"
 
 [metadata.files]
 apscheduler = [
     {file = "APScheduler-3.6.3-py2.py3-none-any.whl", hash = "sha256:e8b1ecdb4c7cb2818913f766d5898183c7cb8936680710a4d3a966e02262e526"},
     {file = "APScheduler-3.6.3.tar.gz", hash = "sha256:3bb5229eed6fbbdafc13ce962712ae66e175aa214c69bed35a06bffcf0c5e244"},
+]
+azure-cognitiveservices-speech = [
+    {file = "azure_cognitiveservices_speech-1.21.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:b73fd07eb562b140aea52490971ce510b921f681c9b998ec5d427b400b3febc3"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5b5582005af3fb61992baa5edf35762acd46258b4aa067b4278a0817e0af8847"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:ea2b92b02ba61dbf10ef6cdd2aa35d4103f13c07fb696df594121572ccf1ee1e"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp310-cp310-win32.whl", hash = "sha256:0e95e2950f43c86fe7294f652f7422eb16c913f0acad71bef9994568cbda6abe"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp310-cp310-win_amd64.whl", hash = "sha256:576c54f708ae5c9ab84391329d63db157d50f3ace2a380e0cad1fe59c99a2c28"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:5657475edf64362fd280a2c32b04b13d7c9980cda14831278321b53d7a70e79f"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp37-cp37m-macosx_11_0_arm64.whl", hash = "sha256:d44ca56696fb21beca1566e8c921bda89806483ddcf8d727bb50567001633a5b"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:b6bfe64bb52e250c0935c5a18183596ae9951f5a0cdcfa9888a779706223544e"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp37-cp37m-win32.whl", hash = "sha256:f410126f5ce8ce3809c29c7225348f500ed83c2214e75a7e4763987f9436038a"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp37-cp37m-win_amd64.whl", hash = "sha256:40c07263d3af736191d504bfae7076e6cfba621cfa271c17ab726178965948e5"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:942adea8e9ebc46fd3bd8882990a7f9eb5f63e67eeb286564f251c023c7821c2"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:bc93ed1116d1d961e5e8a7826b3197f18cf38e94e371205d4d6af00ffd65dbaf"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:018ffee4b7fd03f42643543921636a00ed8d828ddeb38ebd6933682d61013e16"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp38-cp38-win32.whl", hash = "sha256:ed79bdd44f05b5e33d71656eea33e4d42c3ecde87e169709a3bc7af44024f45d"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp38-cp38-win_amd64.whl", hash = "sha256:d45e66a6fdccf85dbdcf55ce6435f570567dfd41aafbff818a3b0ba068ef179b"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:b5f94b2f9442b93ed337804fdf39d5e10a44fc42e615dc6ed4a553c3ccf18166"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:4d7af822936684dd6d784fe5e7e4879834169d31422a11ef4d1452d3dbf8647a"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:99425516582789639f7a3bb4d9e9ab9536b1ef6dc696e97b5c191afe423632cc"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp39-cp39-win32.whl", hash = "sha256:144d6ff2bd9c40f814aabd6c972c4b3d530fa1cbf44fc4ebfd1e7b669c852aa0"},
+    {file = "azure_cognitiveservices_speech-1.21.0-cp39-cp39-win_amd64.whl", hash = "sha256:78d651b7c2fe830cc430ac99c8bd4c9c39397b3e619059d7c6fe3bd666532948"},
 ]
 "backports.zoneinfo" = [
     {file = "backports.zoneinfo-0.2.1-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:da6013fd84a690242c310d77ddb8441a559e9cb3d3d59ebac9aca1a57b2e18bc"},
