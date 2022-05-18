@@ -40,7 +40,7 @@ def get_telegraph_url(update: Update, context: CallbackContext):
         url = re.sub(r'^.*?.com', 'https://scribe.rip', url)
 
     m_id = update.message.reply_text('Fetching the article...').message_id
-    telegraph_url = export_to_telegraph.export(url, force=True)
+    telegraph_url = export_to_telegraph.export(url, force=True, noSourceLink= True)
     context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
     telegraph_url = f"https://{telegraph_url}" if "https://" not in telegraph_url else telegraph_url
     context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=m_id, text=telegraph_url)
