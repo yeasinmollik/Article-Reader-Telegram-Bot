@@ -2,7 +2,7 @@ import logging
 import json
 import subprocess
 import time
-
+import re
 import requests
 from telegram import (Update,
                       ReplyKeyboardMarkup, ReplyKeyboardRemove, ChatAction, MessageEntity)
@@ -30,12 +30,19 @@ def unshorten_url(url):
 
 def get_telegraph_url(update: Update, context: CallbackContext):
     url = update.message.text
-    # url = unshorten_url(url) if "link.medium.com" in url else url  # unshorten medium.com urls
-    # print(url)
 
+    # unshorten link.medium.com urls
+    if "link.medium.com" in url:
+        url = unshorten_url(url)
 
-    m_id = update.message.reply_text('Please wait while I fetch the article...', quote=True).message_id
+    # bypassing paywalls for medium articles
+    if "medium.com" in url:
+        url = re.sub(r'^.*?.com', 'https://scribe.rip', url)
+
+    m_id = update.message.reply_text('Fetching the article...').message_id
     telegraph_url = export_to_telegraph.export(url, force=True)
+    context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
+    telegraph_url = f"https://{telegraph_url}" if "https://" not in telegraph_url else telegraph_url
     context.bot.edit_message_text(chat_id=update.effective_chat.id, message_id=m_id, text=telegraph_url)
 
 
