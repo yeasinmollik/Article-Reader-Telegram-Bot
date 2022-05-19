@@ -18,7 +18,7 @@ from telegram.ext import (
 import export_to_telegraph
 import azure.cognitiveservices.speech as speechsdk
 from newspaper import Article
-from mutagen.easyid3 import EasyID3
+from mutagen.id3 import ID3, ID3NoHeaderError
 import tldextract
 import domain_list
 
@@ -90,12 +90,14 @@ def text2speech(update: Update, context: CallbackContext):
     domain, telegraph_url = instant_view(url)
     title, text = extract_text(telegraph_url)
     get_text2speech(title, text)
-    
 
-    audio = EasyID3(f"{title}.mp3")
-    audio["title"] = title
-    audio["artist"] = domain
-    audio.save()
+    try:
+        tags = ID3(f"{title}.mp3")
+    except ID3NoHeaderError:
+        tags = ID3()
+    tags["title"] = title
+    tags["artist"] = domain
+    tags.save(f"{title}.mp3")
 
     context.bot.delete_message(chat_id=update.effective_chat.id, message_id=m_id)
     context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_AUDIO)
