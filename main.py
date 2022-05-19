@@ -51,17 +51,18 @@ def instant_view(url):
         url = unshorten_url(url)
 
     # bypassing paywalls for medium articles
-    if tldextract.extract(url).domain in domain_list.domains:
+    domain = tldextract.extract(url).domain
+    if domain in domain_list.domains:
         url = re.sub(r'^.*?.com', 'https://scribe.rip', url)
 
-    return "https://" + export_to_telegraph.export(url, force=True)
+    return [domain, "https://" + export_to_telegraph.export(url, force=True)]
 
 
 def get_telegraph_url(update: Update, context: CallbackContext):
     url = link_of_user[update.effective_chat.id]
 
     m_id = update.message.reply_text('Fetching the article...', reply_markup=ReplyKeyboardRemove()).message_id
-    telegraph_url = instant_view(url)
+    telegraph_url = instant_view(url)[1]
 
     context.bot.delete_message(chat_id=update.effective_chat.id, message_id=m_id)
     update.message.reply_text(text=telegraph_url)
@@ -86,8 +87,15 @@ def text2speech(update: Update, context: CallbackContext):
     m_id = update.message.reply_text('Converting the article to speech...',
                                      reply_markup=ReplyKeyboardRemove()).message_id
     url = link_of_user[update.effective_chat.id]
-    title, text = extract_text(instant_view(url))
+    domain, telegraph_url = instant_view(url)
+    title, text = extract_text(telegraph_url)
     get_text2speech(title, text)
+    
+
+    audio = EasyID3(f"{title}.mp3")
+    audio["title"] = title
+    audio["artist"] = domain
+    audio.save()
 
     context.bot.delete_message(chat_id=update.effective_chat.id, message_id=m_id)
     context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_AUDIO)
