@@ -1,5 +1,6 @@
 import logging
 import json
+import os
 import subprocess
 import time
 import re
@@ -90,6 +91,8 @@ def text2speech(update: Update, context: CallbackContext):
     context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_AUDIO)
     context.bot.send_audio(chat_id=update.effective_chat.id, audio=open(f"{title}.mp3", 'rb'), timeout=100,
                            caption=title, reply_markup=ReplyKeyboardRemove())
+
+    os.remove(f"{title}.mp3")
     return ConversationHandler.END
 
 
