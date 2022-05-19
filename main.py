@@ -19,6 +19,8 @@ import export_to_telegraph
 import azure.cognitiveservices.speech as speechsdk
 from newspaper import Article
 from mutagen.easyid3 import EasyID3
+import tldextract
+import domain_list
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -49,7 +51,7 @@ def instant_view(url):
         url = unshorten_url(url)
 
     # bypassing paywalls for medium articles
-    if "medium.com" in url:
+    if tldextract.extract(url).domain in domain_list.domains:
         url = re.sub(r'^.*?.com', 'https://scribe.rip', url)
 
     return "https://" + export_to_telegraph.export(url, force=True)
