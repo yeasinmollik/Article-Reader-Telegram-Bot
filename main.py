@@ -18,16 +18,18 @@ from telegram.ext import (
 import export_to_telegraph
 import azure.cognitiveservices.speech as speechsdk
 from newspaper import Article
-from mutagen.id3 import ID3, ID3NoHeaderError
+import mutagen
+from mutagen.easyid3 import EasyID3
 import tldextract
 import domain_list
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-LINK, CHOOSE, READ, LISTEN = range(4)
+READ, LISTEN = range(2)
 
-link_of_user = {}
+article_of_user = {}
+last_bot_message = {}
 
 with open('config.json') as config_file:
     config = json.load(config_file)
@@ -37,8 +39,9 @@ speech_config.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutput
 
 
 def start(update: Update, context: CallbackContext):
-    update.message.reply_text(text="**Send me any article url: **", parse_mode="Markdown")
-    return LINK
+    last_bot_message[update.effective_chat.id] = update.message.reply_text(text="**Send me any article url: **",
+                                                                           parse_mode="Markdown").message_id
+    return READ
 
 
 def unshorten_url(url):
@@ -58,15 +61,27 @@ def instant_view(url):
     return [domain, "https://" + export_to_telegraph.export(url, force=True)]
 
 
-def get_telegraph_url(update: Update, context: CallbackContext):
-    url = link_of_user[update.effective_chat.id]
+def read(update: Update, context: CallbackContext):
+    if update.effective_chat.id in last_bot_message:
+        context.bot.delete_message(chat_id=update.effective_chat.id,
+                                   message_id=last_bot_message[update.effective_chat.id])
+        last_bot_message.pop(update.effective_chat.id, None)
 
+    url = update.message.text
     m_id = update.message.reply_text('Fetching the article...', reply_markup=ReplyKeyboardRemove()).message_id
-    telegraph_url = instant_view(url)[1]
+
+    domain, telegraph_url = instant_view(url)
+    article_of_user[update.effective_chat.id] = [domain, telegraph_url]
 
     context.bot.delete_message(chat_id=update.effective_chat.id, message_id=m_id)
     update.message.reply_text(text=telegraph_url)
-    return ConversationHandler.END
+
+    last_bot_message[update.effective_chat.id] = update.message.reply_text(text="Want to Listen to it?",
+                                                                           reply_markup=ReplyKeyboardMarkup(
+                                                                               keyboard=[["Yes", "No"]],
+                                                                               one_time_keyboard=True,
+                                                                               resize_keyboard=True)).message_id
+    return LISTEN
 
 
 def get_text2speech(title, text):
@@ -83,50 +98,45 @@ def extract_text(url):
     return [article.title, article.text]
 
 
-def text2speech(update: Update, context: CallbackContext):
+def listen(update: Update, context: CallbackContext):
+    if update.effective_chat.id in last_bot_message:
+        context.bot.delete_message(chat_id=update.effective_chat.id,
+                                   message_id=last_bot_message[update.effective_chat.id])
+        last_bot_message.pop(update.effective_chat.id, None)
+    context.bot.delete_message(chat_id=update.effective_chat.id, message_id=update.message.message_id)
+    if update.message.text == "No":
+        m_id = update.message.reply_text(text="Alight!", reply_markup=ReplyKeyboardRemove()).message_id
+        time.sleep(1)
+        context.bot.delete_message(chat_id=update.effective_chat.id, message_id=m_id)
+        return ConversationHandler.END
+
     m_id = update.message.reply_text('Converting the article to speech...',
                                      reply_markup=ReplyKeyboardRemove()).message_id
-    url = link_of_user[update.effective_chat.id]
-    domain, telegraph_url = instant_view(url)
-    title, text = extract_text(telegraph_url)
+
+    author, url = article_of_user[update.effective_chat.id]
+    title, text = extract_text(url)
     get_text2speech(title, text)
 
+    filename = f"{title}.mp3"
     try:
-        tags = ID3(f"{title}.mp3")
-    except ID3NoHeaderError:
-        tags = ID3()
-    tags["title"] = title
-    tags["artist"] = domain
-    tags.save(f"{title}.mp3")
+        meta = EasyID3(filename)
+    except mutagen.id3.ID3NoHeaderError:
+        meta = mutagen.File(filename, easy=True)
+        meta.add_tags()
+    meta['title'] = title
+    meta['artist'] = author.title()
+    meta.save(filename, v2_version=3)
 
     context.bot.delete_message(chat_id=update.effective_chat.id, message_id=m_id)
     context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_AUDIO)
-    context.bot.send_audio(chat_id=update.effective_chat.id, audio=open(f"{title}.mp3", 'rb'), timeout=100,
+    context.bot.send_audio(chat_id=update.effective_chat.id, audio=open(filename, 'rb'), timeout=100,
                            caption=title, reply_markup=ReplyKeyboardRemove())
-
-    os.remove(f"{title}.mp3")
+    os.remove(filename)
     return ConversationHandler.END
 
 
-def choose_an_option(update: Update, context: CallbackContext):
-    if update.message.text == "Read Article":
-        return READ
-    elif update.message.text == "Listen to Article":
-        return LISTEN
-    elif update.message.text == "Exit":
-        return ConversationHandler.END
-
-
-def handle_url(update: Update, context: CallbackContext):
-    url = update.message.text
-    link_of_user[update.effective_chat.id] = url
-
-    keyword = [["Read Article"], ["Listen to Article"], ["Exit"]]
-
-    update.message.reply_text(text="Choose an option: ",
-                              reply_markup=ReplyKeyboardMarkup(keyboard=keyword, one_time_keyboard=True,
-                                                               resize_keyboard=True))
-    return CHOOSE
+def exit(update: Update, context: CallbackContext):
+    return ConversationHandler.END
 
 
 def main():
@@ -136,12 +146,11 @@ def main():
     conversation_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start),
                       MessageHandler(Filters.text & (Filters.entity('url') | Filters.entity(MessageEntity.TEXT_LINK)),
-                                     handle_url)],
+                                     read)],
         states={
-            LINK: [MessageHandler(Filters.text & (Filters.entity('url') | Filters.entity(MessageEntity.TEXT_LINK)),
-                                  handle_url)],
-            CHOOSE: [MessageHandler(Filters.text("Read Article"), get_telegraph_url),
-                     MessageHandler(Filters.text("Listen to Article"), text2speech)]
+            READ: [MessageHandler(Filters.text & (Filters.entity('url') | Filters.entity(MessageEntity.TEXT_LINK)),
+                                  read)],
+            LISTEN: [MessageHandler(Filters.regex("Yes|No"), listen)],
         },
         fallbacks=[CommandHandler('start', start)],
         run_async=True
