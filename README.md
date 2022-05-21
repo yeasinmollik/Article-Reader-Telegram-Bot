@@ -1,2 +1,2 @@
 # Article Reader Telegram-Bot
-Send the bot any article url and it will reply with an audio message reading that article!
+Send the bot any article link and it will reply with an audio recording of that article!
